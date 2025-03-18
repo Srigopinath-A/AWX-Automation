@@ -1,35 +1,58 @@
 package com.example.Awx_automation.Controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.Awx_automation.Entity.Credential;
+import com.example.Awx_automation.Entity.Host;
+import com.example.Awx_automation.Entity.Inventory;
+import com.example.Awx_automation.Entity.JobTemplateRequest;
+import com.example.Awx_automation.Entity.JobTemplateResponse;
+import com.example.Awx_automation.Entity.ProjectRequest;
+import com.example.Awx_automation.Entity.ProjectResponse;
 import com.example.Awx_automation.Service.AWXService;
+
 
 @RestController
 @RequestMapping("/api/awx")
 public class AWXController {
 
-	private final AWXService awxService;
+    private final AWXService awxService;
 
-	@Autowired
-	public AWXController(AWXService awxService) {
-		this.awxService = awxService;
-	}
+    @Autowired
+    public AWXController(AWXService awxService) {
+        this.awxService = awxService;
+    }
 
-	@PostMapping("/create-project")
-	public String createProject(@RequestParam String name, @RequestParam String scmType, @RequestParam String scmUrl,
-			@RequestParam String scmBranch, @RequestParam int scmCredential, @RequestParam int organization) {
-		return awxService.createProject(name, scmType, scmUrl, scmBranch, scmCredential, organization);
-	}
+    @PostMapping("/create-project")
+    public ProjectResponse createProject(@RequestBody ProjectRequest projectRequest) {
+        return awxService.createProject(projectRequest);
+    }
 
-	@PostMapping("/create-job-template")
-	public String createJobTemplate(@RequestParam String name, @RequestParam int projectId,
-			@RequestParam String playbook, @RequestParam int inventory, @RequestParam int organization) {
-		return awxService.createJobTemplate(name, projectId, playbook, inventory, organization);
-	}
+    @PostMapping("/create-job-template")
+    public JobTemplateResponse createJobTemplate(@RequestBody JobTemplateRequest jobTemplateRequest) {
+        return awxService.createJobTemplate(jobTemplateRequest);
+    }
 
-	@PostMapping("/trigger-job")
-	public String triggerJob(@RequestParam int jobTemplateId) {
-		return awxService.triggerJob(jobTemplateId);
-	}
+    @PostMapping("/trigger-job")
+    public String triggerJob(@RequestParam int jobTemplateId) {
+        return awxService.triggerJob(jobTemplateId);
+    }
+
+    @GetMapping("/inventories")
+    public List<Inventory> getInventories() {
+        return awxService.fetchInventories();
+    }
+
+    @GetMapping("/hosts")
+    public List<Host> getHosts() {
+        return awxService.fetchHosts();
+    }
+
+    @GetMapping("/credentials")
+    public List<Credential> getCredentials() {
+        return awxService.fetchCredentials();
+    }
 }
