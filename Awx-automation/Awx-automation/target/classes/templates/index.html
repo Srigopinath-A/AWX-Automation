@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWX Automation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AWX Automation</h1>
+        <form id="dataForm">
+            <div class="form-group">
+                <label for="projectName">Project Name</label>
+                <input type="text" id="projectName" name="projectName" required>
+            </div>
+            <div class="form-group">
+                <label for="scmType">SCM Type</label>
+                <input type="text" id="scmType" name="scmType" required>
+            </div>
+            <div class="form-group">
+                <label for="scmUrl">SCM URL</label>
+                <input type="text" id="scmUrl" name="scmUrl" required>
+            </div>
+            <div class="form-group">
+                <label for="scmBranch">SCM Branch</label>
+                <input type="text" id="scmBranch" name="scmBranch" required>
+            </div>
+            <div class="form-group">
+                <label for="scmCredential">SCM Credential ID</label>
+                <input type="number" id="scmCredential" name="scmCredential" required>
+            </div>
+            <div class="form-group">
+                <label for="organization">Organization ID</label>
+                <input type="number" id="organization" name="organization" required>
+            </div>
+            <div class="form-group">
+                <label for="jobTemplateName">Job Template Name</label>
+                <input type="text" id="jobTemplateName" name="jobTemplateName" required>
+            </div>
+            <div class="form-group">
+                <label for="projectId">Project ID</label>
+                <input type="number" id="projectId" name="projectId" required>
+            </div>
+            <div class="form-group">
+                <label for="playbook">Playbook</label>
+                <input type="text" id="playbook" name="playbook" required>
+            </div>
+            <div class="form-group">
+                <label for="inventory">Inventory ID</label>
+                <input type="number" id="inventory" name="inventory" required>
+            </div>
+            <div class="form-group">
+                <label for="jobTemplateId">AWX Job Template ID</label>
+                <input type="number" id="jobTemplateId" name="jobTemplateId" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+        <div class="results" id="results">
+            <h2>Results</h2>
+            <pre id="resultData"></pre>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('dataForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const projectName = document.getElementById('projectName').value;
+            const scmType = document.getElementById('scmType').value;
+            const scmUrl = document.getElementById('scmUrl').value;
+            const scmBranch = document.getElementById('scmBranch').value;
+            const scmCredential = document.getElementById('scmCredential').value;
+            const organization = document.getElementById('organization').value;
+            const jobTemplateName = document.getElementById('jobTemplateName').value;
+            const projectId = document.getElementById('projectId').value;
+            const playbook = document.getElementById('playbook').value;
+            const inventory = document.getElementById('inventory').value;
+            const jobTemplateId = document.getElementById('jobTemplateId').value;
+
+            fetch('/api/awx/create-project', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: projectName, scmType, scmUrl, scmBranch, scmCredential, organization }),
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('resultData').textContent = data;
+
+                return fetch('/api/awx/create-job-template', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: jobTemplateName, projectId, playbook, inventory, organization }),
+                });
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('resultData').textContent += '\n' + data;
+
+                return fetch('/api/awx/trigger-job', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ jobTemplateId }),
+                });
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('resultData').textContent += '\n' + data;
+            })
+            .catch(error => {
+                document.getElementById('resultData').textContent = 'Error: ' + error;
+            });
+        });
+    </script>
+</body>
+</html>
