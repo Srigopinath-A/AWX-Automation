@@ -18,8 +18,8 @@ import com.example.Awx_automation.Service.AWXService;
 @RestController
 @RequestMapping("/api/awx")
 public class AWXController {
-
-    private final AWXService awxService;
+	
+	private final AWXService awxService;
 
     @Autowired
     public AWXController(AWXService awxService) {
@@ -54,5 +54,10 @@ public class AWXController {
     @GetMapping("/credentials")
     public List<Credential> getCredentials() {
         return awxService.fetchCredentials();
+    }
+
+    @GetMapping("/projects")
+    public List<ProjectResponse> getProjects() {
+        return awxService.fetchProjects();
     }
 }
