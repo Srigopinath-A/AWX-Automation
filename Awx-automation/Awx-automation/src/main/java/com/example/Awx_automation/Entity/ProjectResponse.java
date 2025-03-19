@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class ProjectResponse {
 	private int id;
-	private int String;
+	private String name;
 }
