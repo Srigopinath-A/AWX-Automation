@@ -1,16 +1,17 @@
 package com.example.Awx_automation.Entity;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Document( collection = "job_templates")
 public class JobTemplateResponse {
 	
-	private int id;
-	private String name;
-	private int project;
-	private String playbook;
-	private int inventory;
-	private int organization;
+	@Id
+	private String id;
+    private String name;
 }

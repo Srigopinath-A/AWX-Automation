@@ -10,12 +10,12 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
 public class JobTemplateRequest {
-	
-	 private String name;
-	    private int project;
-	    private String playbook;
-	    private int inventory;
-	    private int organization;
+
+	private String name;
+    private String description;
+    private String jobType;
+    private int inventory;
+    private int project;
+    private String playbook;
 }

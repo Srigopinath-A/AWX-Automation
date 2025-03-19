@@ -10,7 +10,8 @@ import com.example.Awx_automation.Entity.Host;
 import com.example.Awx_automation.Entity.Inventory;
 import com.example.Awx_automation.Entity.JobTemplateRequest;
 import com.example.Awx_automation.Entity.JobTemplateResponse;
-import com.example.Awx_automation.Entity.ProjectRequest;
+import com.example.Awx_automation.Entity.Organization;
+import com.example.Awx_automation.Entity.Project;
 import com.example.Awx_automation.Entity.ProjectResponse;
 import com.example.Awx_automation.Service.AWXService;
 
@@ -26,19 +27,9 @@ public class AWXController {
         this.awxService = awxService;
     }
 
-    @PostMapping("/create-project")
-    public ProjectResponse createProject(@RequestBody ProjectRequest projectRequest) {
-        return awxService.createProject(projectRequest);
-    }
-
-    @PostMapping("/create-job-template")
-    public JobTemplateResponse createJobTemplate(@RequestBody JobTemplateRequest jobTemplateRequest) {
-        return awxService.createJobTemplate(jobTemplateRequest);
-    }
-
-    @PostMapping("/trigger-job")
-    public String triggerJob(@RequestParam int jobTemplateId) {
-        return awxService.triggerJob(jobTemplateId);
+    @GetMapping("/hosts")
+    public List<Host> getHosts() {
+        return awxService.fetchHosts();
     }
 
     @GetMapping("/inventories")
@@ -46,18 +37,28 @@ public class AWXController {
         return awxService.fetchInventories();
     }
 
-    @GetMapping("/hosts")
-    public List<Host> getHosts() {
-        return awxService.fetchHosts();
-    }
-
-    @GetMapping("/credentials")
-    public List<Credential> getCredentials() {
-        return awxService.fetchCredentials();
+    @GetMapping("/organizations")
+    public List<Organization> getOrganizations() {
+        return awxService.fetchOrganizations();
     }
 
     @GetMapping("/projects")
-    public List<ProjectResponse> getProjects() {
+    public List<Project> getProjects() {
         return awxService.fetchProjects();
+    }
+
+    @GetMapping("/job-templates")
+    public List<JobTemplateResponse> getJobTemplates() {
+        return awxService.fetchJobTemplates();
+    }
+
+    @PostMapping("/create-project")
+    public ProjectResponse createProject(@RequestBody Project project) {
+        return awxService.createProject(project);
+    }
+
+    @PostMapping("/create-job-template")
+    public JobTemplateResponse createJobTemplate(@RequestBody JobTemplateRequest jobTemplateRequest) {
+        return awxService.createJobTemplate(jobTemplateRequest);
     }
 }
