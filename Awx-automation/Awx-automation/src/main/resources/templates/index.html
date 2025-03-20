@@ -3,49 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AWX Automation</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-        }
-        h1 {
-            text-align: center;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .form-group button {
-            padding: 10px 15px;
-            background-color: #007BFF;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-        }
-        .form-group button:hover {
-            background-color: #0056b3;
-        }
-        .results {
-            margin-top: 20px;
-        }
-    </style>
+    <title>Create AWX Project</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>AWX Automation</h1>
+    <div class="container mt-5">
+        <h1>Create AWX Project</h1>
+        <form id="projectForm" method="post" action="/project">
+            <div class="form-group">
+                <label for="name">Project Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" class="form-control" id="description" name="description">
+            </div>
+            <div class="form-group">
+                <label for="localPath">Local Path</label>
+                <input type="text" class="form-control" id="localPath" name="localPath">
+            </div>
+            <div class="form-group">
+                <label for="scmType">SCM Type</label>
+                <select class="form-control" id="scmType" name="scmType">
+                    <option value="">Manual</option>
+                    <option value="git">Git</option>
+                    <option value="svn">Subversion</option>
+                    <option value="insights">Red Hat Insights</option>
+                    <option value="archive">Remote Archive</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="scmUrl">SCM URL</label>
+                <input type="text" class="form-control" id="scmUrl" name="scmUrl">
+            </div>
+            <div class="form-group">
+                <label for="scmBranch">SCM Branch</label>
+                <input type="text" class="form-control" id="scmBranch" name="scmBranch">
+            </div>
+            <div class="form-group">
+                <label for="scmRefspec">SCM Refspec</label>
+                <input type="text" class="form-control" id="scmRefspec" name="scmRefspec">
+            </div>
+            <div class="form-group">
+                <label for="scmClean">SCM Clean</label>
+                <input type="checkbox" id="scmClean" name="scmClean">
+            </div>
+            <div class="form-group">
+                <label for="scmTrackSubmodules">SCM Track Submodules</label>
+                <input type="checkbox" id="scmTrackSubmodules" name="scmTrackSubmodules">
+            </div>
+            <div class="form-group">
+                <label for="scmDeleteOnUpdate">SCM Delete on Update</label>
+                <input type="checkbox" id="scmDeleteOnUpdate" name="scmDeleteOnUpdate">
+            </div>
+            <div class="form-group">
+                <label for="credential">Credential</label>
+                <input type="number" class="form-control" id="credential" name="credential">
+            </div>
+            <div class="form-group">
+                <label for="timeout">Timeout</label>
+                <input type="number" class="form-control" id="timeout" name="timeout">
+            </div>
+            <div class="form-group">
+                <label for="organization">Organization</label>
+                <input type="number" class="form-control" id="organization" name="organization">
+            </div>
+            <div class="form-group">
+                <label for="scmUpdateOnLaunch">SCM Update on Launch</label>
+                <input type="checkbox" id="scmUpdateOnLaunch" name="scmUpdateOnLaunch">
+            </div>
+            <div class="form-group">
+                <label for="scmUpdateCacheTimeout">SCM Update Cache Timeout</label>
+                <input type="number" class="form-control" id="scmUpdateCacheTimeout" name="scmUpdateCacheTimeout">
+            </div>
+            <div class="form-group">
+                <label for="allowOverride">Allow Override</label>
+                <input type="checkbox" id="allowOverride" name="allowOverride">
+            </div>
+            <div class="form-group">
+                <label for="defaultEnvironment">Default Environment</label>
+                <input type="number" class="form-control" id="defaultEnvironment" name="defaultEnvironment">
+            </div>
+            <div class="form-group">
+                <label for="signatureValidationCredential">Signature Validation Credential</label>
+                <input type="number" class="form-control" id="signatureValidationCredential" name="signatureValidationCredential">
+            </div>
+            <button type="submit" class="btn btn-primary">Create Project</button>
+        </form>
+        <div id="responseMessage" class="mt-3"></div>
+    </div>
+    <div class="container mt-5">
+        <h1>AWX Resources</h1>
         <div class="inventory">
             <h2>Inventories</h2>
             <ul id="inventoryList"></ul>
@@ -66,109 +114,45 @@
             <h2>Job Templates</h2>
             <ul id="jobTemplateList"></ul>
         </div>
-        <form id="dataForm">
-            <div class="form-group">
-                <label for="projectName">Project Name</label>
-                <input type="text" id="projectName" name="projectName" required>
-            </div>
-            <div class="form-group">
-                <label for="description">Description</label>
-                <input type="text" id="description" name="description" required>
-            </div>
-            <div class="form-group">
-                <label for="organization">Organization ID</label>
-                <select id="organization" name="organization" required></select>
-            </div>
-            <div class="form-group">
-                <label for="scmType">SCM Type</label>
-                <input type="text" id="scmType" name="scmType" required>
-            </div>
-            <div class="form-group">
-                <label for="jobTemplateName">Job Template Name</label>
-                <input type="text" id="jobTemplateName" name="jobTemplateName" required>
-            </div>
-            <div class="form-group">
-                <label for="jobTemplateDescription">Job Template Description</label>
-                <input type="text" id="jobTemplateDescription" name="jobTemplateDescription" required>
-            </div>
-            <div class="form-group">
-                <label for="jobType">Job Type</label>
-                <input type="text" id="jobType" name="jobType" required>
-            </div>
-            <div class="form-group">
-                <label for="inventory">Inventory ID</label>
-                <select id="inventory" name="inventory" required></select>
-            </div>
-            <div class="form-group">
-                <label for="project">Project ID</label>
-                <select id="project" name="project" required></select>
-            </div>
-            <div class="form-group">
-                <label for="playbook">Playbook</label>
-                <input type="text" id="playbook" name="playbook" required>
-            </div>
-            <div class="form-group">
-                <button type="submit">Submit</button>
-            </div>
-        </form>
-        <div class="results" id="results">
-            <h2>Results</h2>
-            <pre id="resultData"></pre>
-        </div>
     </div>
-
     <script>
-        document.getElementById('dataForm').addEventListener('submit', function(event) {
+        document.getElementById('projectForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const projectName = document.getElementById('projectName').value;
-            const description = document.getElementById('description').value;
-            const organization = document.getElementById('organization').value;
-            const scmType = document.getElementById('scmType').value;
-            const jobTemplateName = document.getElementById('jobTemplateName').value;
-            const jobTemplateDescription = document.getElementById('jobTemplateDescription').value;
-            const jobType = document.getElementById('jobType').value;
-            const inventory = document.getElementById('inventory').value;
-            const project = document.getElementById('project').value;
-            const playbook = document.getElementById('playbook').value;
+            const project = {
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                localPath: document.getElementById('localPath').value,
+                scmType: document.getElementById('scmType').value,
+                scmUrl: document.getElementById('scmUrl').value,
+                scmBranch: document.getElementById('scmBranch').value,
+                scmRefspec: document.getElementById('scmRefspec').value,
+                scmClean: document.getElementById('scmClean').checked,
+                scmTrackSubmodules: document.getElementById('scmTrackSubmodules').checked,
+                scmDeleteOnUpdate: document.getElementById('scmDeleteOnUpdate').checked,
+                credential: document.getElementById('credential').value,
+                timeout: document.getElementById('timeout').value,
+                organization: document.getElementById('organization').value,
+                scmUpdateOnLaunch: document.getElementById('scmUpdateOnLaunch').checked,
+                scmUpdateCacheTimeout: document.getElementById('scmUpdateCacheTimeout').value,
+                allowOverride: document.getElementById('allowOverride').checked,
+                defaultEnvironment: document.getElementById('defaultEnvironment').value,
+                signatureValidationCredential: document.getElementById('signatureValidationCredential').value
+            };
 
             fetch('/api/awx/create-project', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 
-                    name: projectName, 
-                    description: description,
-                    organization: organization,
-                    scmType: scmType
-                }),
+                body: JSON.stringify(project)
             })
             .then(response => response.json())
-            .then(projectData => {
-                document.getElementById('resultData').textContent = JSON.stringify(projectData, null, 2);
-
-                return fetch('/api/awx/create-job-template', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        name: jobTemplateName, 
-                        description: jobTemplateDescription, 
-                        jobType: jobType, 
-                        inventory: inventory, 
-                        project: projectData.id, 
-                        playbook: playbook 
-                    }),
-                });
-            })
-            .then(response => response.json())
-            .then(jobTemplateData => {
-                document.getElementById('resultData').textContent += '\n' + JSON.stringify(jobTemplateData, null, 2);
+            .then(data => {
+                document.getElementById('responseMessage').innerText = JSON.stringify(data, null, 2);
             })
             .catch(error => {
-                document.getElementById('resultData').textContent = 'Error: ' + error;
+                document.getElementById('responseMessage').innerText = 'Error: ' + error;
             });
         });
 
@@ -176,18 +160,23 @@
             .then(response => response.json())
             .then(inventories => {
                 const inventoryList = document.getElementById('inventoryList');
-                const inventorySelect = document.getElementById('inventory');
                 inventoryList.innerHTML = '';
-                inventorySelect.innerHTML = '';
                 inventories.forEach(inventory => {
                     const li = document.createElement('li');
                     li.textContent = `ID: ${inventory.id}, Name: ${inventory.name}`;
                     inventoryList.appendChild(li);
+                });
+            });
 
-                    const option = document.createElement('option');
-                    option.value = inventory.id;
-                    option.textContent = inventory.name;
-                    inventorySelect.appendChild(option);
+        fetch('/api/awx/projects')
+            .then(response => response.json())
+            .then(projects => {
+                const projectList = document.getElementById('projectList');
+                projectList.innerHTML = '';
+                projects.forEach(project => {
+                    const li = document.createElement('li');
+                    li.textContent = `ID: ${project.id}, Name: ${project.name}`;
+                    projectList.appendChild(li);
                 });
             });
 
@@ -207,37 +196,11 @@
             .then(response => response.json())
             .then(organizations => {
                 const organizationList = document.getElementById('organizationList');
-                const organizationSelect = document.getElementById('organization');
                 organizationList.innerHTML = '';
-                organizationSelect.innerHTML = '';
                 organizations.forEach(organization => {
                     const li = document.createElement('li');
                     li.textContent = `ID: ${organization.id}, Name: ${organization.name}`;
                     organizationList.appendChild(li);
-
-                    const option = document.createElement('option');
-                    option.value = organization.id;
-                    option.textContent = organization.name;
-                    organizationSelect.appendChild(option);
-                });
-            });
-
-        fetch('/api/awx/projects')
-            .then(response => response.json())
-            .then(projects => {
-                const projectList = document.getElementById('projectList');
-                const projectSelect = document.getElementById('project');
-                projectList.innerHTML = '';
-                projectSelect.innerHTML = '';
-                projects.forEach(project => {
-                    const li = document.createElement('li');
-                    li.textContent = `ID: ${project.id}, Name: ${project.name}`;
-                    projectList.appendChild(li);
-
-                    const option = document.createElement('option');
-                    option.value = project.id;
-                    option.textContent = project.name;
-                    projectSelect.appendChild(option);
                 });
             });
 

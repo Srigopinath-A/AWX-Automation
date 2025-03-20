@@ -37,7 +37,7 @@ import com.example.Awx_automation.Repo.ProjectRepository;
 
 @Service
 public class AWXService {
-	  private static final Logger logger = Logger.getLogger(AWXService.class.getName());
+	 private static final Logger logger = Logger.getLogger(AWXService.class.getName());
 
 	    private final RestTemplate restTemplate;
 	    private final String awxApiUrl;
