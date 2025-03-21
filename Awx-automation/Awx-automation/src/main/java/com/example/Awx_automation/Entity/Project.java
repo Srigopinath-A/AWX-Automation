@@ -20,8 +20,8 @@ public class Project {
 	private int id;
     private String name;
     private String description = "";
-    private String localPath = "";
     private String scmType = "";
+    private String localPath = "";
     private String scmUrl = "";
     private String scmBranch = "";
     private String scmRefspec = "";

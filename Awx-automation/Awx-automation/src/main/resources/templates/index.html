@@ -9,7 +9,7 @@
 <body>
     <div class="container mt-5">
         <h1>Create AWX Project</h1>
-        <form id="projectForm" method="post" action="/project">
+        <form id="projectForm" method="post" action="/api/awx/create-project">
             <div class="form-group">
                 <label for="name">Project Name</label>
                 <input type="text" class="form-control" id="name" name="name" required>
@@ -19,42 +19,43 @@
                 <input type="text" class="form-control" id="description" name="description">
             </div>
             <div class="form-group">
-                <label for="localPath">Local Path</label>
-                <input type="text" class="form-control" id="localPath" name="localPath">
-            </div>
-            <div class="form-group">
                 <label for="scmType">SCM Type</label>
                 <select class="form-control" id="scmType" name="scmType">
-                    <option value="">Manual</option>
+                    <option value="manual">Manual</option>
                     <option value="git">Git</option>
-                    <option value="svn">Subversion</option>
-                    <option value="insights">Red Hat Insights</option>
-                    <option value="archive">Remote Archive</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="scmUrl">SCM URL</label>
-                <input type="text" class="form-control" id="scmUrl" name="scmUrl">
+            <div id="manualDetails" style="display: none;">
+                <div class="form-group">
+                    <label for="localPath">Local Path</label>
+                    <input type="text" class="form-control" id="localPath" name="localPath">
+                </div>
             </div>
-            <div class="form-group">
-                <label for="scmBranch">SCM Branch</label>
-                <input type="text" class="form-control" id="scmBranch" name="scmBranch">
-            </div>
-            <div class="form-group">
-                <label for="scmRefspec">SCM Refspec</label>
-                <input type="text" class="form-control" id="scmRefspec" name="scmRefspec">
-            </div>
-            <div class="form-group">
-                <label for="scmClean">SCM Clean</label>
-                <input type="checkbox" id="scmClean" name="scmClean">
-            </div>
-            <div class="form-group">
-                <label for="scmTrackSubmodules">SCM Track Submodules</label>
-                <input type="checkbox" id="scmTrackSubmodules" name="scmTrackSubmodules">
-            </div>
-            <div class="form-group">
-                <label for="scmDeleteOnUpdate">SCM Delete on Update</label>
-                <input type="checkbox" id="scmDeleteOnUpdate" name="scmDeleteOnUpdate">
+            <div id="gitDetails" style="display: none;">
+                <div class="form-group">
+                    <label for="scmUrl">SCM URL</label>
+                    <input type="text" class="form-control" id="scmUrl" name="scmUrl">
+                </div>
+                <div class="form-group">
+                    <label for="scmBranch">SCM Branch</label>
+                    <input type="text" class="form-control" id="scmBranch" name="scmBranch">
+                </div>
+                <div class="form-group">
+                    <label for="scmRefspec">SCM Refspec</label>
+                    <input type="text" class="form-control" id="scmRefspec" name="scmRefspec">
+                </div>
+                <div class="form-group">
+                    <label for="scmClean">SCM Clean</label>
+                    <input type="checkbox" id="scmClean" name="scmClean">
+                </div>
+                <div class="form-group">
+                    <label for="scmTrackSubmodules">SCM Track Submodules</label>
+                    <input type="checkbox" id="scmTrackSubmodules" name="scmTrackSubmodules">
+                </div>
+                <div class="form-group">
+                    <label for="scmDeleteOnUpdate">SCM Delete on Update</label>
+                    <input type="checkbox" id="scmDeleteOnUpdate" name="scmDeleteOnUpdate">
+                </div>
             </div>
             <div class="form-group">
                 <label for="credential">Credential</label>
@@ -110,20 +111,40 @@
             <h2>Organizations</h2>
             <ul id="organizationList"></ul>
         </div>
+        <div class="credential">
+            <h2>Credentials</h2>
+            <ul id="credentialList"></ul>
+        </div>
         <div class="job-templates">
             <h2>Job Templates</h2>
             <ul id="jobTemplateList"></ul>
         </div>
     </div>
     <script>
+        document.getElementById('scmType').addEventListener('change', function() {
+            var scmType = this.value;
+            var manualDetails = document.getElementById('manualDetails');
+            var gitDetails = document.getElementById('gitDetails');
+            if (scmType === 'manual') {
+                manualDetails.style.display = 'block';
+                gitDetails.style.display = 'none';
+            } else if (scmType === 'git') {
+                manualDetails.style.display = 'none';
+                gitDetails.style.display = 'block';
+            } else {
+                manualDetails.style.display = 'none';
+                gitDetails.style.display = 'none';
+            }
+        });
+
         document.getElementById('projectForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
             const project = {
                 name: document.getElementById('name').value,
                 description: document.getElementById('description').value,
-                localPath: document.getElementById('localPath').value,
                 scmType: document.getElementById('scmType').value,
+                localPath: document.getElementById('localPath').value,
                 scmUrl: document.getElementById('scmUrl').value,
                 scmBranch: document.getElementById('scmBranch').value,
                 scmRefspec: document.getElementById('scmRefspec').value,
@@ -201,6 +222,18 @@
                     const li = document.createElement('li');
                     li.textContent = `ID: ${organization.id}, Name: ${organization.name}`;
                     organizationList.appendChild(li);
+                });
+            });
+
+        fetch('/api/awx/credentials')
+            .then(response => response.json())
+            .then(credentials => {
+                const credentialList = document.getElementById('credentialList');
+                credentialList.innerHTML = '';
+                credentials.forEach(credential => {
+                    const li = document.createElement('li');
+                    li.textContent = `ID: ${credential.id}, Name: ${credential.name}`;
+                    credentialList.appendChild(li);
                 });
             });
 
