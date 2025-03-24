@@ -17,7 +17,7 @@ public class Project {
 	
 	
 	@Id
-	private int id;
+	private Long id;
     private String name;
     private String description = "";
     private String scmType = "";

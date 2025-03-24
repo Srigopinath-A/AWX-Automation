@@ -3,162 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create AWX Project</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <title>Create AWX Project and Job Template</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container mt-5">
-        <h1>Create AWX Project</h1>
-        <form id="projectForm" method="post" action="/api/awx/create-project">
-            <div class="form-group">
-                <label for="name">Project Name</label>
-                <input type="text" class="form-control" id="name" name="name" required>
+        <h1 class="text-center">AWX Management</h1>
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2>Create AWX Project</h2>
             </div>
-            <div class="form-group">
-                <label for="description">Description</label>
-                <input type="text" class="form-control" id="description" name="description">
+            <div class="card-body">
+                <form id="projectForm" method="post" action="/api/awx/create-project">
+                    <div class="form-group">
+                        <label for="name">Project Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="organization">Organization</label>
+                        <input type="number" class="form-control" id="organization" name="organization" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="scmType">SCM Type</label>
+                        <select class="form-control" id="scmType" name="scmType" required>
+                            <option value="manual">Manual</option>
+                            <option value="git">Git</option>
+                        </select>
+                    </div>
+                    <div id="gitDetails" style="display: none;">
+                        <div class="form-group">
+                            <label for="scmUrl">SCM URL</label>
+                            <input type="text" class="form-control" id="scmUrl" name="scmUrl">
+                        </div>
+                    </div>
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="allowOverride" name="allowOverride">
+                        <label class="form-check-label" for="allowOverride">Allow Override</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Project</button>
+                </form>
+                <div id="responseMessage" class="mt-3 alert alert-info"></div>
             </div>
-            <div class="form-group">
-                <label for="scmType">SCM Type</label>
-                <select class="form-control" id="scmType" name="scmType">
-                    <option value="manual">Manual</option>
-                    <option value="git">Git</option>
-                </select>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2>Create AWX Job Template</h2>
             </div>
-            <div id="manualDetails" style="display: none;">
-                <div class="form-group">
-                    <label for="localPath">Local Path</label>
-                    <input type="text" class="form-control" id="localPath" name="localPath">
+            <div class="card-body">
+                <form id="jobTemplateForm" method="post" action="/api/awx/create-job-template">
+                    <div class="form-group">
+                        <label for="jobName">Job Template Name</label>
+                        <input type="text" class="form-control" id="jobName" name="jobName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jobDescription">Description</label>
+                        <input type="text" class="form-control" id="jobDescription" name="jobDescription">
+                    </div>
+                    <div class="form-group">
+                        <label for="jobType">Job Type</label>
+                        <select class="form-control" id="jobType" name="jobType" required>
+                            <option value="run">Run</option>
+                            <option value="check">Check</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="inventory">Inventory</label>
+                        <input type="number" class="form-control" id="inventory" name="inventory" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="project">Project</label>
+                        <input type="number" class="form-control" id="project" name="project" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="playbook">Playbook</label>
+                        <input type="text" class="form-control" id="playbook" name="playbook" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="credentials">Credentials</label>
+                        <input type="number" class="form-control" id="credentials" name="credentials">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Job Template</button>
+                </form>
+                <div id="jobTemplateResponseMessage" class="mt-3 alert alert-info"></div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2>Trigger AWX Job Template</h2>
+            </div>
+            <div class="card-body">
+                <form id="triggerJobForm" method="post" action="/api/awx/trigger-job">
+                    <div class="form-group">
+                        <label for="jobTemplateId">Job Template ID</label>
+                        <select class="form-control" id="jobTemplateId" name="jobTemplateId" required></select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Trigger Job</button>
+                </form>
+                <div id="triggerJobResponseMessage" class="mt-3 alert alert-info"></div>
+                <div id="jobResult" class="mt-3 alert alert-info"></div>
+                <div id="jobOutput" class="mt-3 alert alert-info"></div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2>AWX Resources</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h3>Inventories</h3>
+                        <ul id="inventoryList" class="list-group"></ul>
+                    </div>
+                    <div class="col">
+                        <h3>Projects</h3>
+                        <ul id="projectList" class="list-group"></ul>
+                    </div>
+                    <div class="col">
+                        <h3>Hosts</h3>
+                        <ul id="hostList" class="list-group"></ul>
+                    </div>
+                    <div class="col">
+                        <h3>Organizations</h3>
+                        <ul id="organizationList" class="list-group"></ul>
+                    </div>
+                    <div class="col">
+                        <h3>Credentials</h3>
+                        <ul id="credentialList" class="list-group"></ul>
+                    </div>
+                    <div class="col">
+                        <h3>Job Templates</h3>
+                        <ul id="jobTemplateList" class="list-group"></ul>
+                    </div>
                 </div>
             </div>
-            <div id="gitDetails" style="display: none;">
-                <div class="form-group">
-                    <label for="scmUrl">SCM URL</label>
-                    <input type="text" class="form-control" id="scmUrl" name="scmUrl">
-                </div>
-                <div class="form-group">
-                    <label for="scmBranch">SCM Branch</label>
-                    <input type="text" class="form-control" id="scmBranch" name="scmBranch">
-                </div>
-                <div class="form-group">
-                    <label for="scmRefspec">SCM Refspec</label>
-                    <input type="text" class="form-control" id="scmRefspec" name="scmRefspec">
-                </div>
-                <div class="form-group">
-                    <label for="scmClean">SCM Clean</label>
-                    <input type="checkbox" id="scmClean" name="scmClean">
-                </div>
-                <div class="form-group">
-                    <label for="scmTrackSubmodules">SCM Track Submodules</label>
-                    <input type="checkbox" id="scmTrackSubmodules" name="scmTrackSubmodules">
-                </div>
-                <div class="form-group">
-                    <label for="scmDeleteOnUpdate">SCM Delete on Update</label>
-                    <input type="checkbox" id="scmDeleteOnUpdate" name="scmDeleteOnUpdate">
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="credential">Credential</label>
-                <input type="number" class="form-control" id="credential" name="credential">
-            </div>
-            <div class="form-group">
-                <label for="timeout">Timeout</label>
-                <input type="number" class="form-control" id="timeout" name="timeout">
-            </div>
-            <div class="form-group">
-                <label for="organization">Organization</label>
-                <input type="number" class="form-control" id="organization" name="organization">
-            </div>
-            <div class="form-group">
-                <label for="scmUpdateOnLaunch">SCM Update on Launch</label>
-                <input type="checkbox" id="scmUpdateOnLaunch" name="scmUpdateOnLaunch">
-            </div>
-            <div class="form-group">
-                <label for="scmUpdateCacheTimeout">SCM Update Cache Timeout</label>
-                <input type="number" class="form-control" id="scmUpdateCacheTimeout" name="scmUpdateCacheTimeout">
-            </div>
-            <div class="form-group">
-                <label for="allowOverride">Allow Override</label>
-                <input type="checkbox" id="allowOverride" name="allowOverride">
-            </div>
-            <div class="form-group">
-                <label for="defaultEnvironment">Default Environment</label>
-                <input type="number" class="form-control" id="defaultEnvironment" name="defaultEnvironment">
-            </div>
-            <div class="form-group">
-                <label for="signatureValidationCredential">Signature Validation Credential</label>
-                <input type="number" class="form-control" id="signatureValidationCredential" name="signatureValidationCredential">
-            </div>
-            <button type="submit" class="btn btn-primary">Create Project</button>
-        </form>
-        <div id="responseMessage" class="mt-3"></div>
+        </div>
     </div>
-    <div class="container mt-5">
-        <h1>AWX Resources</h1>
-        <div class="inventory">
-            <h2>Inventories</h2>
-            <ul id="inventoryList"></ul>
-        </div>
-        <div class="projects">
-            <h2>Projects</h2>
-            <ul id="projectList"></ul>
-        </div>
-        <div class="hosts">
-            <h2>Hosts</h2>
-            <ul id="hostList"></ul>
-        </div>
-        <div class="organizations">
-            <h2>Organizations</h2>
-            <ul id="organizationList"></ul>
-        </div>
-        <div class="credential">
-            <h2>Credentials</h2>
-            <ul id="credentialList"></ul>
-        </div>
-        <div class="job-templates">
-            <h2>Job Templates</h2>
-            <ul id="jobTemplateList"></ul>
-        </div>
-    </div>
+
     <script>
-        document.getElementById('scmType').addEventListener('change', function() {
+        document.getElementById('scmType').addEventListener('change', function () {
             var scmType = this.value;
-            var manualDetails = document.getElementById('manualDetails');
             var gitDetails = document.getElementById('gitDetails');
-            if (scmType === 'manual') {
-                manualDetails.style.display = 'block';
-                gitDetails.style.display = 'none';
-            } else if (scmType === 'git') {
-                manualDetails.style.display = 'none';
+            if (scmType === 'git') {
                 gitDetails.style.display = 'block';
             } else {
-                manualDetails.style.display = 'none';
                 gitDetails.style.display = 'none';
             }
         });
 
-        document.getElementById('projectForm').addEventListener('submit', function(event) {
+        document.getElementById('projectForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
             const project = {
                 name: document.getElementById('name').value,
-                description: document.getElementById('description').value,
-                scmType: document.getElementById('scmType').value,
-                localPath: document.getElementById('localPath').value,
-                scmUrl: document.getElementById('scmUrl').value,
-                scmBranch: document.getElementById('scmBranch').value,
-                scmRefspec: document.getElementById('scmRefspec').value,
-                scmClean: document.getElementById('scmClean').checked,
-                scmTrackSubmodules: document.getElementById('scmTrackSubmodules').checked,
-                scmDeleteOnUpdate: document.getElementById('scmDeleteOnUpdate').checked,
-                credential: document.getElementById('credential').value,
-                timeout: document.getElementById('timeout').value,
                 organization: document.getElementById('organization').value,
-                scmUpdateOnLaunch: document.getElementById('scmUpdateOnLaunch').checked,
-                scmUpdateCacheTimeout: document.getElementById('scmUpdateCacheTimeout').value,
-                allowOverride: document.getElementById('allowOverride').checked,
-                defaultEnvironment: document.getElementById('defaultEnvironment').value,
-                signatureValidationCredential: document.getElementById('signatureValidationCredential').value
+                scm_type: document.getElementById('scmType').value,
+                scm_url: document.getElementById('scmUrl').value,
+                allow_override: document.getElementById('allowOverride').checked
             };
 
             fetch('/api/awx/create-project', {
@@ -168,85 +171,129 @@
                 },
                 body: JSON.stringify(project)
             })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('responseMessage').innerText = JSON.stringify(data, null, 2);
-            })
-            .catch(error => {
-                document.getElementById('responseMessage').innerText = 'Error: ' + error;
-            });
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('responseMessage').innerText = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    document.getElementById('responseMessage').innerText = 'Error: ' + error;
+                });
         });
 
-        fetch('/api/awx/inventories')
-            .then(response => response.json())
-            .then(inventories => {
-                const inventoryList = document.getElementById('inventoryList');
-                inventoryList.innerHTML = '';
-                inventories.forEach(inventory => {
-                    const li = document.createElement('li');
-                    li.textContent = `ID: ${inventory.id}, Name: ${inventory.name}`;
-                    inventoryList.appendChild(li);
-                });
-            });
+        document.getElementById('jobTemplateForm').addEventListener('submit', function (event) {
+            event.preventDefault();
 
-        fetch('/api/awx/projects')
-            .then(response => response.json())
-            .then(projects => {
-                const projectList = document.getElementById('projectList');
-                projectList.innerHTML = '';
-                projects.forEach(project => {
-                    const li = document.createElement('li');
-                    li.textContent = `ID: ${project.id}, Name: ${project.name}`;
-                    projectList.appendChild(li);
-                });
-            });
+            const jobTemplate = {
+                name: document.getElementById('jobName').value,
+                description: document.getElementById('jobDescription').value,
+                job_type: document.getElementById('jobType').value,
+                inventory: document.getElementById('inventory').value,
+                project: document.getElementById('project').value,
+                playbook: document.getElementById('playbook').value,
+                credentials: document.getElementById('credentials').value
+            };
 
-        fetch('/api/awx/hosts')
-            .then(response => response.json())
-            .then(hosts => {
-                const hostList = document.getElementById('hostList');
-                hostList.innerHTML = '';
-                hosts.forEach(host => {
-                    const li = document.createElement('li');
-                    li.textContent = `ID: ${host.id}, Name: ${host.name}`;
-                    hostList.appendChild(li);
+            fetch('/api/awx/create-job-template', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jobTemplate)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('jobTemplateResponseMessage').innerText = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    document.getElementById('jobTemplateResponseMessage').innerText = 'Error: ' + error;
                 });
-            });
+        });
 
-        fetch('/api/awx/organizations')
-            .then(response => response.json())
-            .then(organizations => {
-                const organizationList = document.getElementById('organizationList');
-                organizationList.innerHTML = '';
-                organizations.forEach(organization => {
-                    const li = document.createElement('li');
-                    li.textContent = `ID: ${organization.id}, Name: ${organization.name}`;
-                    organizationList.appendChild(li);
+        document.getElementById('triggerJobForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const jobTemplateId = document.getElementById('jobTemplateId').value;
+
+            fetch('/api/awx/trigger-job', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ jobTemplateId: jobTemplateId })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('triggerJobResponseMessage').innerText = JSON.stringify(data, null, 2);
+                    checkJobResult(data);
+                })
+                .catch(error => {
+                    document.getElementById('triggerJobResponseMessage').innerText = 'Error: ' + error;
                 });
-            });
+        });
 
-        fetch('/api/awx/credentials')
-            .then(response => response.json())
-            .then(credentials => {
-                const credentialList = document.getElementById('credentialList');
-                credentialList.innerHTML = '';
-                credentials.forEach(credential => {
-                    const li = document.createElement('li');
-                    li.textContent = `ID: ${credential.id}, Name: ${credential.name}`;
-                    credentialList.appendChild(li);
+        function checkJobResult(jobId) {
+            fetch('/api/awx/job-result/' + jobId)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('jobResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    if (data.status === 'successful') {
+                        getJobOutput(jobId);
+                    } else {
+                        setTimeout(function () {
+                            checkJobResult(jobId);
+                        }, 5000); // Check every 5 seconds
+                    }
                 });
-            });
+        }
 
+        function getJobOutput(jobId) {
+            fetch('/api/awx/job-output/' + jobId)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('jobOutput').innerHTML = '<pre>' + data + '</pre>';
+                });
+        }
+
+        // Fetch and populate resource lists
+        function fetchData(endpoint, listId) {
+            fetch(endpoint)
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById(listId);
+                    list.innerHTML = '';
+                    data.forEach(item => {
+                        const li = document.createElement('li');
+                        li.classList.add('list-group-item');
+                        li.textContent = `ID: ${item.id}, Name: ${item.name}`;
+                        list.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        fetchData('/api/awx/inventories', 'inventoryList');
+        fetchData('/api/awx/projects', 'projectList');
+        fetchData('/api/awx/hosts', 'hostList');
+        fetchData('/api/awx/organizations', 'organizationList');
+        fetchData('/api/awx/credentials', 'credentialList');
+        fetchData('/api/awx/job-templates', 'jobTemplateList');
+
+        // Populate job template select for triggering
         fetch('/api/awx/job-templates')
             .then(response => response.json())
             .then(jobTemplates => {
-                const jobTemplateList = document.getElementById('jobTemplateList');
-                jobTemplateList.innerHTML = '';
+                const jobTemplateSelect = document.getElementById('jobTemplateId');
                 jobTemplates.forEach(jobTemplate => {
-                    const li = document.createElement('li');
-                    li.textContent = `ID: ${jobTemplate.id}, Name: ${jobTemplate.name}`;
-                    jobTemplateList.appendChild(li);
+                    const option = document.createElement('option');
+                    option.value = jobTemplate.id;
+                    option.textContent = `ID: ${jobTemplate.id}, Name: ${jobTemplate.name}`;
+                    jobTemplateSelect.appendChild(option);
                 });
+            })
+            .catch(error => {
+                console.error('Error fetching job templates:', error);
             });
     </script>
 </body>

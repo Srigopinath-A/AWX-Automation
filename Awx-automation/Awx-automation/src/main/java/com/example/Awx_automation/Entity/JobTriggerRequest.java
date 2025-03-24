@@ -5,7 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ProjectResponse {
-	private Long id;
-	private String name;
+public class JobTriggerRequest {
+	private Long JobTemplateId;
 }

@@ -24,6 +24,7 @@ import com.example.Awx_automation.Entity.Inventory;
 import com.example.Awx_automation.Entity.InventoryResponse;
 import com.example.Awx_automation.Entity.JobTemplateRequest;
 import com.example.Awx_automation.Entity.JobTemplateResponse;
+import com.example.Awx_automation.Entity.JobTemplateTrigger;
 import com.example.Awx_automation.Entity.JobtemplateResponseWrapper;
 import com.example.Awx_automation.Entity.Organization;
 import com.example.Awx_automation.Entity.OrganizationResponse;
@@ -36,6 +37,7 @@ import com.example.Awx_automation.Repo.InventoryRepository;
 import com.example.Awx_automation.Repo.JobTemplateRepository;
 import com.example.Awx_automation.Repo.OrganizationRepository;
 import com.example.Awx_automation.Repo.ProjectRepository;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
@@ -239,5 +241,45 @@ public class AWXService {
             logger.severe("Error creating job template: " + e.getMessage());
             throw e;
         }
+    }
+    public Integer triggerJobTemplate(JobTemplateTrigger jobTriggerRequest) {
+        try {
+            HttpHeaders headers = createAuthHeaders();
+            // Send an empty body since AWX launch endpoint may not require it
+            HttpEntity<String> request = new HttpEntity<>("{}", headers);
+
+            String url = String.format("%s/job_templates/%d/launch/", awxApiUrl, jobTriggerRequest.getJobTemplateId());
+            ResponseEntity<JsonNode> response = restTemplate.postForEntity(url, request, JsonNode.class);
+
+            JsonNode responseBody = response.getBody();
+            // Extract job ID based on AWX response structure
+            Integer jobId = responseBody.get("job").asInt();
+            return jobId;
+        } catch (Exception e) {
+            logger.severe("Error triggering job template: " + e.getMessage());
+            throw e;
+        }
+    }
+    
+    public JsonNode getJobResult(Long jobId) {
+        String url = String.format("%s/jobs/%d/", awxApiUrl, jobId);
+        HttpHeaders headers = createAuthHeaders();
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, entity, JsonNode.class);
+
+        return response.getBody();
+    }
+
+    public String getJobOutput(Long jobId) {
+        String url = String.format("%s/jobs/%d/stdout/?format=txt", awxApiUrl, jobId);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        headers.setBearerAuth(token);
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+        return response.getBody();
     }
 }

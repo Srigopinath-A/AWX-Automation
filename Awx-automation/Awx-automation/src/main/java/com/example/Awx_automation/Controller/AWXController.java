@@ -3,6 +3,7 @@ package com.example.Awx_automation.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.Awx_automation.Entity.Credential;
@@ -10,10 +11,12 @@ import com.example.Awx_automation.Entity.Host;
 import com.example.Awx_automation.Entity.Inventory;
 import com.example.Awx_automation.Entity.JobTemplateRequest;
 import com.example.Awx_automation.Entity.JobTemplateResponse;
+import com.example.Awx_automation.Entity.JobTemplateTrigger;
 import com.example.Awx_automation.Entity.Organization;
 import com.example.Awx_automation.Entity.Project;
 import com.example.Awx_automation.Entity.ProjectResponse;
 import com.example.Awx_automation.Service.AWXService;
+import com.fasterxml.jackson.databind.JsonNode;
 
 
 @RestController
@@ -65,5 +68,19 @@ public class AWXController {
 	    @PostMapping("/create-job-template")
 	    public JobTemplateResponse createJobTemplate(@RequestBody JobTemplateRequest jobTemplateRequest) {
 	        return awxService.createJobTemplate(jobTemplateRequest);
+	    }
+	    @PostMapping("/trigger-job")
+	    public Integer triggerJobTemplate(@RequestBody JobTemplateTrigger jobTriggerRequest) {
+	        return awxService.triggerJobTemplate(jobTriggerRequest);
+	    }
+
+	    @GetMapping("/job-result/{jobId}")
+	    public JsonNode getJobResult(@PathVariable Long jobId) {
+	        return awxService.getJobResult(jobId);
+	    }
+
+	    @GetMapping("/job-output/{jobId}")
+	    public String getJobOutput(@PathVariable Long jobId) {
+	        return awxService.getJobOutput(jobId);
 	    }
 }
