@@ -612,7 +612,7 @@
                 disassociate: document.getElementById('disassociate').checked
             };
 
-            fetch('/api/awx/notifications/manage', {
+            fetch('/api/awx/create-notification', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
