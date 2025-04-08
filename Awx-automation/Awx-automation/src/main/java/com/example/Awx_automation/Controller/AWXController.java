@@ -1,8 +1,10 @@
 package com.example.Awx_automation.Controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -83,4 +85,43 @@ public class AWXController {
 	    public String getJobOutput(@PathVariable Long jobId) {
 	        return awxService.getJobOutput(jobId);
 	    }
+	    
+	    @PostMapping("/delete-job/{jobId}")
+	    public ResponseEntity<String> deleteJob(@PathVariable Long jobId) {
+	        String result = awxService.Deletejob(jobId);
+	        if (result.equals("Job deleted successfully")) {
+	            return new ResponseEntity<>(result, HttpStatus.OK);
+	        } else {
+	            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+	        }
+	    }
+	    
+	    @PostMapping("/webhook")
+	    public void handleWebhook(@RequestBody Map<String, Object> payload) {
+	        Long jobId = parseLong(payload.get("job_id"));
+	        String jobStatus = (String) payload.get("status");
+	        awxService.sendoutput("mailid", jobId, jobStatus);
+	    }
+
+	    @PostMapping("/create-notification")
+	    public ResponseEntity<String> createNotification(@RequestBody Map<String, Object> payload) {
+	        String result = awxService.manageNotificationTemplate(
+	        		parseLong(payload.get("job_template_id")),
+	        		parseLong(payload.get("notification_template_id")),
+	        		(String) payload.get("type"),
+	        		(Boolean)payload.get("disassociate")
+	        );
+	        return new ResponseEntity<>(result, HttpStatus.OK);
+	    }
+
+	    private Long parseLong(Object value) {
+	        if (value instanceof Number) {
+	            return ((Number) value).longValue();
+	        }
+	        if (value instanceof String) {
+	            return Long.parseLong((String) value);
+	        }
+	        throw new IllegalArgumentException("Cannot parse value to Long: " + value);
+	    }
+	    
 }

@@ -2,7 +2,9 @@ package com.example.Awx_automation.Service;
 
 
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -13,11 +15,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.Awx_automation.Entity.Credential;
 import com.example.Awx_automation.Entity.CredentialResponse;
+import com.example.Awx_automation.Entity.DeleteJobTemplate;
 import com.example.Awx_automation.Entity.Host;
 import com.example.Awx_automation.Entity.HostResponse;
 import com.example.Awx_automation.Entity.Inventory;
@@ -44,6 +49,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class AWXService {
 	private static final Logger logger = Logger.getLogger(AWXService.class.getName());
+	
+	@Autowired
+	private JavaMailSender mailsender;
 
     private final RestTemplate restTemplate;
     private final String awxApiUrl;
@@ -282,4 +290,63 @@ public class AWXService {
 
         return response.getBody();
     }
+    
+   public String Deletejob(Long Jobid) {
+	   String url = String.format("%s/jobs/%d",awxApiUrl, Jobid);
+	   HttpHeaders headers =  createAuthHeaders();
+	   
+	   HttpEntity<String> entity = new HttpEntity<>(null, headers);
+	
+	   
+	   try {
+	        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
+	        if (response.getStatusCode().is2xxSuccessful()) {
+	            return "Job deleted successfully";
+	        } else {
+	            return "Failed to delete job";
+	        }
+	    } catch (Exception e) {
+	        logger.severe("Error deleting job: " + e.getMessage());
+	        return "Error deleting job";
+	    }
+   }
+  
+   public String manageNotificationTemplate(Long jobTemplateId, Long notificationTemplateId,String type, boolean disassociate ) {
+	   String endpoint;
+	   switch(type.toLowerCase()) {
+	   case "success":
+		   endpoint = "notification_templates_success";
+		   break;
+	   case "started":
+		   endpoint = "notification_templates_started";
+		   break;
+	   case "error":
+		   endpoint = "notification_templates_error";
+		   break;
+	   default:
+		   throw new IllegalArgumentException("Invalid notification type:"+ type);
+	   }
+	   
+	   String url = String.format("%s/job_templates/%d/%s/", awxApiUrl, jobTemplateId, endpoint);
+	   HttpHeaders header =  createAuthHeaders();
+	   header.set("Content-Type", "application/json");
+	   
+	   Map<String, Object> request = new HashMap<>();
+	   request.put("id", notificationTemplateId);
+	   if(disassociate) {
+		   request.put("disassociate", true);
+	   }
+	   
+	   HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, header);
+	   ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+	   return response.getBody();
+   }
+   public void sendoutput(String to, Long jobId, String jobstatus) {
+       SimpleMailMessage message = new SimpleMailMessage();
+       message.setTo(to);
+       message.setSubject("AWX Job Notification");
+       message.setText("Job ID: " + jobId + "\nStatus: " + jobstatus);
+       mailsender.send(message);
+   }
+ 
 }

@@ -3,146 +3,421 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create AWX Project and Job Template</title>
+    <title>AWX Management</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #5e72e4;
+            --secondary-color: #f7fafc;
+            --accent-color: #2dce89;
+            --danger-color: #f5365c;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .container {
+            max-width: 1400px;
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            border: none;
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 1.25rem 1.5rem;
+        }
+        
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #4a5acf;
+            border-color: #4a5acf;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(94, 114, 228, 0.25);
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            font-weight: bold;
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .nav-tabs .nav-link {
+            color: #495057;
+        }
+        
+        .list-group-item {
+            transition: all 0.2s;
+        }
+        
+        .list-group-item:hover {
+            background-color: var(--secondary-color);
+            transform: translateX(5px);
+        }
+        
+        .resource-col {
+            margin-bottom: 1.5rem;
+        }
+        
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+            border-radius: 10rem;
+        }
+        
+        .status-success {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .status-failed {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .status-running {
+            background-color: #fb6340;
+            color: white;
+        }
+        
+        .job-output {
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+        }
+        
+        .section-title {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+        
+        .refresh-btn {
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            transform: rotate(180deg);
+        }
+        
+        @media (max-width: 768px) {
+            .resource-col {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center">AWX Management</h1>
-        <div class="card mt-4">
-            <div class="card-header">
-                <h2>Create AWX Project</h2>
+    <div class="container mt-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="text-primary">
+                <i class="fas fa-tasks mr-2"></i>AWX Management Console
+            </h1>
+            <div class="text-muted">
+                <span id="currentDateTime"></span>
             </div>
-            <div class="card-body">
-                <form id="projectForm" method="post" action="/api/awx/create-project">
-                    <div class="form-group">
-                        <label for="name">Project Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        
+        <ul class="nav nav-tabs mb-4" id="awxTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="projects-tab" data-toggle="tab" href="#projects" role="tab">
+                    <i class="fas fa-project-diagram mr-1"></i> Projects
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="templates-tab" data-toggle="tab" href="#templates" role="tab">
+                    <i class="fas fa-clipboard-list mr-1"></i> Job Templates
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="notifications-tab" data-toggle="tab" href="#notifications" role="tab">
+                    <i class="fas fa-bell mr-1"></i> Notifications
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="resources-tab" data-toggle="tab" href="#resources" role="tab">
+                    <i class="fas fa-boxes mr-1"></i> Resources
+                </a>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="awxTabsContent">
+            <!-- Projects Tab -->
+            <div class="tab-pane fade show active" id="projects" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="mb-0"><i class="fas fa-plus-circle mr-2"></i>Create AWX Project</h2>
                     </div>
-                    <div class="form-group">
-                        <label for="organization">Organization</label>
-                        <input type="number" class="form-control" id="organization" name="organization" required>
+                    <div class="card-body">
+                        <form id="projectForm" method="post" action="/api/awx/create-project">
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="name"><i class="fas fa-project-diagram mr-1"></i>Project Name</label>
+                                    <input type="text" class="form-control" id="name" name="name" required placeholder="Enter project name">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="organization"><i class="fas fa-sitemap mr-1"></i>Organization ID</label>
+                                    <input type="number" class="form-control" id="organization" name="organization" required placeholder="Enter organization ID">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="scmType"><i class="fas fa-code-branch mr-1"></i>SCM Type</label>
+                                <select class="form-control" id="scmType" name="scmType" required>
+                                    <option value="" disabled selected>Select SCM type</option>
+                                    <option value="manual">Manual</option>
+                                    <option value="git">Git</option>
+                                </select>
+                            </div>
+                            
+                            <div id="gitDetails" style="display: none;">
+                                <div class="form-group">
+                                    <label for="scmUrl"><i class="fas fa-link mr-1"></i>SCM URL</label>
+                                    <input type="text" class="form-control" id="scmUrl" name="scmUrl" placeholder="https://github.com/username/repo.git">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" id="allowOverride" name="allowOverride">
+                                <label class="form-check-label" for="allowOverride">Allow Override</label>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus mr-1"></i>Create Project
+                                </button>
+                                <small class="text-muted">All fields marked with * are required</small>
+                            </div>
+                        </form>
+                        <div id="responseMessage" class="mt-3 alert alert-info" style="display: none;"></div>
                     </div>
-                    <div class="form-group">
-                        <label for="scmType">SCM Type</label>
-                        <select class="form-control" id="scmType" name="scmType" required>
-                            <option value="manual">Manual</option>
-                            <option value="git">Git</option>
-                        </select>
+                </div>
+            </div>
+            
+            <!-- Job Templates Tab -->
+            <div class="tab-pane fade" id="templates" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="mb-0"><i class="fas fa-clipboard-list mr-2"></i>Create AWX Job Template</h2>
                     </div>
-                    <div id="gitDetails" style="display: none;">
-                        <div class="form-group">
-                            <label for="scmUrl">SCM URL</label>
-                            <input type="text" class="form-control" id="scmUrl" name="scmUrl">
+                    <div class="card-body">
+                        <form id="jobTemplateForm" method="post" action="/api/awx/create-job-template">
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="jobName"><i class="fas fa-heading mr-1"></i>Job Template Name</label>
+                                    <input type="text" class="form-control" id="jobName" name="jobName" required placeholder="Enter job template name">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="jobDescription"><i class="fas fa-align-left mr-1"></i>Description</label>
+                                    <input type="text" class="form-control" id="jobDescription" name="jobDescription" placeholder="Enter description">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label for="jobType"><i class="fas fa-tasks mr-1"></i>Job Type</label>
+                                    <select class="form-control" id="jobType" name="jobType" required>
+                                        <option value="" disabled selected>Select job type</option>
+                                        <option value="run">Run</option>
+                                        <option value="check">Check</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="inventory"><i class="fas fa-server mr-1"></i>Inventory ID</label>
+                                    <input type="number" class="form-control" id="inventory" name="inventory" required placeholder="Enter inventory ID">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="project"><i class="fas fa-project-diagram mr-1"></i>Project ID</label>
+                                    <input type="number" class="form-control" id="project" name="project" required placeholder="Enter project ID">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group col-md-8">
+                                    <label for="playbook"><i class="fas fa-file-code mr-1"></i>Playbook</label>
+                                    <input type="text" class="form-control" id="playbook" name="playbook" required placeholder="Enter playbook path">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="credentials"><i class="fas fa-key mr-1"></i>Credentials ID</label>
+                                    <input type="number" class="form-control" id="credentials" name="credentials" placeholder="Enter credentials ID">
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus mr-1"></i>Create Job Template
+                                </button>
+                                <small class="text-muted">All fields marked with * are required</small>
+                            </div>
+                        </form>
+                        <div id="jobTemplateResponseMessage" class="mt-3 alert alert-info" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0"><i class="fas fa-play mr-2"></i>Trigger AWX Job Template</h2>
+                        <i class="fas fa-sync-alt refresh-btn" onclick="refreshJobTemplates()"></i>
+                    </div>
+                    <div class="card-body">
+                        <form id="triggerJobForm" method="post" action="/api/awx/trigger-job">
+                            <div class="form-group">
+                                <label for="jobTemplateId"><i class="fas fa-clipboard-list mr-1"></i>Job Template</label>
+                                <select class="form-control" id="jobTemplateId" name="jobTemplateId" required>
+                                    <option value="" disabled selected>Select a job template</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-play mr-1"></i>Trigger Job
+                            </button>
+                        </form>
+                        <div id="triggerJobResponseMessage" class="mt-3 alert alert-info" style="display: none;"></div>
+                        <div id="jobResult" class="mt-3" style="display: none;"></div>
+                        <div id="jobOutput" class="mt-3 job-output" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notifications Tab -->
+            <div class="tab-pane fade" id="notifications" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="mb-0"><i class="fas fa-bell mr-2"></i>Manage Notification Template</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="manageNotificationForm" method="post" action="/api/awx/notifications/manage">
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="manageJobTemplateId"><i class="fas fa-clipboard-list mr-1"></i>Job Template ID</label>
+                                    <input type="number" class="form-control" id="manageJobTemplateId" name="job_template_id" required placeholder="Enter job template ID">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="manageNotificationTemplateId"><i class="fas fa-bell mr-1"></i>Notification Template ID</label>
+                                    <input type="number" class="form-control" id="manageNotificationTemplateId" name="notification_template_id" required placeholder="Enter notification template ID">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="notificationType"><i class="fas fa-exclamation-circle mr-1"></i>Notification Type</label>
+                                    <select class="form-control" id="notificationType" name="type" required>
+                                        <option value="" disabled selected>Select notification type</option>
+                                        <option value="success">Success</option>
+                                        <option value="started">Started</option>
+                                        <option value="error">Error</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-6 d-flex align-items-end">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="disassociate" name="disassociate">
+                                        <label class="form-check-label" for="disassociate">Disassociate</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save mr-1"></i>Manage Notification Template
+                            </button>
+                        </form>
+                        <div id="manageNotificationResponseMessage" class="mt-3 alert alert-info" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Resources Tab -->
+            <div class="tab-pane fade" id="resources" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0"><i class="fas fa-boxes mr-2"></i>AWX Resources</h2>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="refreshAllResources()">
+                                <i class="fas fa-sync-alt mr-1"></i>Refresh All
+                            </button>
                         </div>
                     </div>
-                    <div class="form-group form-check">
-                        <input type="checkbox" class="form-check-input" id="allowOverride" name="allowOverride">
-                        <label class="form-check-label" for="allowOverride">Allow Override</label>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Create Project</button>
-                </form>
-                <div id="responseMessage" class="mt-3 alert alert-info"></div>
-            </div>
-        </div>
-
-        <div class="card mt-4">
-            <div class="card-header">
-                <h2>Create AWX Job Template</h2>
-            </div>
-            <div class="card-body">
-                <form id="jobTemplateForm" method="post" action="/api/awx/create-job-template">
-                    <div class="form-group">
-                        <label for="jobName">Job Template Name</label>
-                        <input type="text" class="form-control" id="jobName" name="jobName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="jobDescription">Description</label>
-                        <input type="text" class="form-control" id="jobDescription" name="jobDescription">
-                    </div>
-                    <div class="form-group">
-                        <label for="jobType">Job Type</label>
-                        <select class="form-control" id="jobType" name="jobType" required>
-                            <option value="run">Run</option>
-                            <option value="check">Check</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="inventory">Inventory</label>
-                        <input type="number" class="form-control" id="inventory" name="inventory" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="project">Project</label>
-                        <input type="number" class="form-control" id="project" name="project" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="playbook">Playbook</label>
-                        <input type="text" class="form-control" id="playbook" name="playbook" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="credentials">Credentials</label>
-                        <input type="number" class="form-control" id="credentials" name="credentials">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Create Job Template</button>
-                </form>
-                <div id="jobTemplateResponseMessage" class="mt-3 alert alert-info"></div>
-            </div>
-        </div>
-
-        <div class="card mt-4">
-            <div class="card-header">
-                <h2>Trigger AWX Job Template</h2>
-            </div>
-            <div class="card-body">
-                <form id="triggerJobForm" method="post" action="/api/awx/trigger-job">
-                    <div class="form-group">
-                        <label for="jobTemplateId">Job Template ID</label>
-                        <select class="form-control" id="jobTemplateId" name="jobTemplateId" required></select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Trigger Job</button>
-                </form>
-                <div id="triggerJobResponseMessage" class="mt-3 alert alert-info"></div>
-                <div id="jobResult" class="mt-3 alert alert-info"></div>
-                <div id="jobOutput" class="mt-3 alert alert-info"></div>
-            </div>
-        </div>
-
-        <div class="card mt-4">
-            <div class="card-header">
-                <h2>AWX Resources</h2>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col">
-                        <h3>Inventories</h3>
-                        <ul id="inventoryList" class="list-group"></ul>
-                    </div>
-                    <div class="col">
-                        <h3>Projects</h3>
-                        <ul id="projectList" class="list-group"></ul>
-                    </div>
-                    <div class="col">
-                        <h3>Hosts</h3>
-                        <ul id="hostList" class="list-group"></ul>
-                    </div>
-                    <div class="col">
-                        <h3>Organizations</h3>
-                        <ul id="organizationList" class="list-group"></ul>
-                    </div>
-                    <div class="col">
-                        <h3>Credentials</h3>
-                        <ul id="credentialList" class="list-group"></ul>
-                    </div>
-                    <div class="col">
-                        <h3>Job Templates</h3>
-                        <ul id="jobTemplateList" class="list-group"></ul>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 col-sm-6 resource-col">
+                                <h3 class="section-title"><i class="fas fa-server mr-2"></i>Inventories</h3>
+                                <ul id="inventoryList" class="list-group"></ul>
+                            </div>
+                            <div class="col-md-4 col-sm-6 resource-col">
+                                <h3 class="section-title"><i class="fas fa-project-diagram mr-2"></i>Projects</h3>
+                                <ul id="projectList" class="list-group"></ul>
+                            </div>
+                            <div class="col-md-4 col-sm-6 resource-col">
+                                <h3 class="section-title"><i class="fas fa-desktop mr-2"></i>Hosts</h3>
+                                <ul id="hostList" class="list-group"></ul>
+                            </div>
+                            <div class="col-md-4 col-sm-6 resource-col">
+                                <h3 class="section-title"><i class="fas fa-sitemap mr-2"></i>Organizations</h3>
+                                <ul id="organizationList" class="list-group"></ul>
+                            </div>
+                            <div class="col-md-4 col-sm-6 resource-col">
+                                <h3 class="section-title"><i class="fas fa-key mr-2"></i>Credentials</h3>
+                                <ul id="credentialList" class="list-group"></ul>
+                            </div>
+                            <div class="col-md-4 col-sm-6 resource-col">
+                                <h3 class="section-title"><i class="fas fa-clipboard-list mr-2"></i>Job Templates</h3>
+                                <ul id="jobTemplateList" class="list-group"></ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
+        // Update current date and time
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('en-US', options);
+        }
+        
+        setInterval(updateDateTime, 60000); // Update every minute
+        updateDateTime(); // Initial call
+        
+        // SCM Type toggle
         document.getElementById('scmType').addEventListener('change', function () {
             var scmType = this.value;
             var gitDetails = document.getElementById('gitDetails');
@@ -153,9 +428,13 @@
             }
         });
 
+        // Project Form Submission
         document.getElementById('projectForm').addEventListener('submit', function (event) {
             event.preventDefault();
-
+            
+            const responseMessage = document.getElementById('responseMessage');
+            responseMessage.style.display = 'none';
+            
             const project = {
                 name: document.getElementById('name').value,
                 organization: document.getElementById('organization').value,
@@ -173,15 +452,28 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('responseMessage').innerText = JSON.stringify(data, null, 2);
+                    responseMessage.style.display = 'block';
+                    responseMessage.innerText = JSON.stringify(data, null, 2);
+                    if (data.id) {
+                        responseMessage.classList.remove('alert-info');
+                        responseMessage.classList.add('alert-success');
+                        fetchData('/api/awx/projects', 'projectList');
+                    }
                 })
                 .catch(error => {
-                    document.getElementById('responseMessage').innerText = 'Error: ' + error;
+                    responseMessage.style.display = 'block';
+                    responseMessage.classList.remove('alert-info');
+                    responseMessage.classList.add('alert-danger');
+                    responseMessage.innerText = 'Error: ' + error;
                 });
         });
 
+        // Job Template Form Submission
         document.getElementById('jobTemplateForm').addEventListener('submit', function (event) {
             event.preventDefault();
+            
+            const responseMessage = document.getElementById('jobTemplateResponseMessage');
+            responseMessage.style.display = 'none';
 
             const jobTemplate = {
                 name: document.getElementById('jobName').value,
@@ -202,15 +494,34 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('jobTemplateResponseMessage').innerText = JSON.stringify(data, null, 2);
+                    responseMessage.style.display = 'block';
+                    responseMessage.innerText = JSON.stringify(data, null, 2);
+                    if (data.id) {
+                        responseMessage.classList.remove('alert-info');
+                        responseMessage.classList.add('alert-success');
+                        fetchData('/api/awx/job-templates', 'jobTemplateList');
+                        refreshJobTemplates();
+                    }
                 })
                 .catch(error => {
-                    document.getElementById('jobTemplateResponseMessage').innerText = 'Error: ' + error;
+                    responseMessage.style.display = 'block';
+                    responseMessage.classList.remove('alert-info');
+                    responseMessage.classList.add('alert-danger');
+                    responseMessage.innerText = 'Error: ' + error;
                 });
         });
 
+        // Trigger Job Form Submission
         document.getElementById('triggerJobForm').addEventListener('submit', function (event) {
             event.preventDefault();
+            
+            const responseMessage = document.getElementById('triggerJobResponseMessage');
+            const jobResult = document.getElementById('jobResult');
+            const jobOutput = document.getElementById('jobOutput');
+            
+            responseMessage.style.display = 'none';
+            jobResult.style.display = 'none';
+            jobOutput.style.display = 'none';
 
             const jobTemplateId = document.getElementById('jobTemplateId').value;
 
@@ -223,20 +534,50 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('triggerJobResponseMessage').innerText = JSON.stringify(data, null, 2);
-                    checkJobResult(data);
+                    responseMessage.style.display = 'block';
+                    responseMessage.innerText = `Job triggered successfully. Job ID: ${data.id}`;
+                    responseMessage.classList.remove('alert-info');
+                    responseMessage.classList.add('alert-success');
+                    
+                    checkJobResult(data.id);
                 })
                 .catch(error => {
-                    document.getElementById('triggerJobResponseMessage').innerText = 'Error: ' + error;
+                    responseMessage.style.display = 'block';
+                    responseMessage.classList.remove('alert-info');
+                    responseMessage.classList.add('alert-danger');
+                    responseMessage.innerText = 'Error: ' + error;
                 });
         });
 
         function checkJobResult(jobId) {
+            const jobResult = document.getElementById('jobResult');
+            const jobOutput = document.getElementById('jobOutput');
+            
             fetch('/api/awx/job-result/' + jobId)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('jobResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    jobResult.style.display = 'block';
+                    
+                    let statusBadge = '';
                     if (data.status === 'successful') {
+                        statusBadge = '<span class="status-badge status-success">Success</span>';
+                    } else if (data.status === 'failed') {
+                        statusBadge = '<span class="status-badge status-failed">Failed</span>';
+                    } else if (data.status === 'running') {
+                        statusBadge = '<span class="status-badge status-running">Running</span>';
+                    }
+                    
+                    jobResult.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>Job Status: ${statusBadge}</h5>
+                            <small class="text-muted">ID: ${jobId}</small>
+                        </div>
+                        <pre class="mt-2">${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    
+                    if (data.status === 'successful') {
+                        getJobOutput(jobId);
+                    } else if (data.status === 'failed') {
                         getJobOutput(jobId);
                     } else {
                         setTimeout(function () {
@@ -247,12 +588,53 @@
         }
 
         function getJobOutput(jobId) {
+            const jobOutput = document.getElementById('jobOutput');
+            
             fetch('/api/awx/job-output/' + jobId)
                 .then(response => response.text())
                 .then(data => {
-                    document.getElementById('jobOutput').innerHTML = '<pre>' + data + '</pre>';
+                    jobOutput.style.display = 'block';
+                    jobOutput.innerHTML = data;
                 });
         }
+
+        // Notification Form Submission
+        document.getElementById('manageNotificationForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            
+            const responseMessage = document.getElementById('manageNotificationResponseMessage');
+            responseMessage.style.display = 'none';
+
+            const notification = {
+                job_template_id: document.getElementById('manageJobTemplateId').value,
+                notification_template_id: document.getElementById('manageNotificationTemplateId').value,
+                type: document.getElementById('notificationType').value,
+                disassociate: document.getElementById('disassociate').checked
+            };
+
+            fetch('/api/awx/notifications/manage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(notification)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    responseMessage.style.display = 'block';
+                    responseMessage.innerText = JSON.stringify(data, null, 2);
+                    if (data.success) {
+                        responseMessage.classList.remove('alert-info');
+                        responseMessage.classList.add('alert-success');
+                    }
+                })
+                .catch(error => {
+                    responseMessage.style.display = 'block';
+                    responseMessage.classList.remove('alert-info');
+                    responseMessage.classList.add('alert-danger');
+                    responseMessage.innerText = 'Error: ' + error;
+                });
+        });
 
         // Fetch and populate resource lists
         function fetchData(endpoint, listId) {
@@ -261,40 +643,86 @@
                 .then(data => {
                     const list = document.getElementById(listId);
                     list.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        const li = document.createElement('li');
+                        li.classList.add('list-group-item', 'text-muted');
+                        li.textContent = 'No items found';
+                        list.appendChild(li);
+                        return;
+                    }
+                    
                     data.forEach(item => {
                         const li = document.createElement('li');
-                        li.classList.add('list-group-item');
-                        li.textContent = `ID: ${item.id}, Name: ${item.name}`;
+                        li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+                        
+                        const content = document.createElement('div');
+                        content.innerHTML = `<strong>${item.name || 'Unnamed'}</strong><br><small>ID: ${item.id}</small>`;
+                        
+                        li.appendChild(content);
+                        
+                        if (listId === 'jobTemplateList') {
+                            const triggerBtn = document.createElement('button');
+                            triggerBtn.classList.add('btn', 'btn-sm', 'btn-outline-primary');
+                            triggerBtn.innerHTML = '<i class="fas fa-play"></i>';
+                            triggerBtn.onclick = function() {
+                                document.getElementById('jobTemplateId').value = item.id;
+                                document.getElementById('templates-tab').click();
+                            };
+                            li.appendChild(triggerBtn);
+                        }
+                        
                         list.appendChild(li);
                     });
                 })
                 .catch(error => {
+                    const list = document.getElementById(listId);
+                    list.innerHTML = '';
+                    
+                    const li = document.createElement('li');
+                    li.classList.add('list-group-item', 'text-danger');
+                    li.textContent = 'Error loading data';
+                    list.appendChild(li);
+                    
                     console.error('Error fetching data:', error);
                 });
         }
 
-        fetchData('/api/awx/inventories', 'inventoryList');
-        fetchData('/api/awx/projects', 'projectList');
-        fetchData('/api/awx/hosts', 'hostList');
-        fetchData('/api/awx/organizations', 'organizationList');
-        fetchData('/api/awx/credentials', 'credentialList');
-        fetchData('/api/awx/job-templates', 'jobTemplateList');
+        // Refresh all resources
+        function refreshAllResources() {
+            fetchData('/api/awx/inventories', 'inventoryList');
+            fetchData('/api/awx/projects', 'projectList');
+            fetchData('/api/awx/hosts', 'hostList');
+            fetchData('/api/awx/organizations', 'organizationList');
+            fetchData('/api/awx/credentials', 'credentialList');
+            fetchData('/api/awx/job-templates', 'jobTemplateList');
+            refreshJobTemplates();
+        }
 
-        // Populate job template select for triggering
-        fetch('/api/awx/job-templates')
-            .then(response => response.json())
-            .then(jobTemplates => {
-                const jobTemplateSelect = document.getElementById('jobTemplateId');
-                jobTemplates.forEach(jobTemplate => {
-                    const option = document.createElement('option');
-                    option.value = jobTemplate.id;
-                    option.textContent = `ID: ${jobTemplate.id}, Name: ${jobTemplate.name}`;
-                    jobTemplateSelect.appendChild(option);
+        // Refresh job templates for triggering
+        function refreshJobTemplates() {
+            fetch('/api/awx/job-templates')
+                .then(response => response.json())
+                .then(jobTemplates => {
+                    const jobTemplateSelect = document.getElementById('jobTemplateId');
+                    jobTemplateSelect.innerHTML = '<option value="" disabled selected>Select a job template</option>';
+                    
+                    jobTemplates.forEach(jobTemplate => {
+                        const option = document.createElement('option');
+                        option.value = jobTemplate.id;
+                        option.textContent = `${jobTemplate.name} (ID: ${jobTemplate.id})`;
+                        jobTemplateSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching job templates:', error);
                 });
-            })
-            .catch(error => {
-                console.error('Error fetching job templates:', error);
-            });
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshAllResources();
+        });
     </script>
 </body>
 </html>
