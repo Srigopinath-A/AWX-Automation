@@ -100,17 +100,6 @@
             color: white;
         }
         
-        .job-output {
-            max-height: 400px;
-            overflow-y: auto;
-            background-color: #2d3748;
-            color: #e2e8f0;
-            padding: 1rem;
-            border-radius: 5px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9rem;
-        }
-        
         .section-title {
             border-bottom: 2px solid var(--primary-color);
             padding-bottom: 0.5rem;
@@ -177,7 +166,7 @@
                         <h2 class="mb-0"><i class="fas fa-plus-circle mr-2"></i>Create AWX Project</h2>
                     </div>
                     <div class="card-body">
-                        <form id="projectForm" method="post" action="/api/awx/create-project">
+                        <form id="projectForm">
                             <div class="form-row">
                                 <div class="form-group col-md-6">
                                     <label for="name"><i class="fas fa-project-diagram mr-1"></i>Project Name</label>
@@ -217,7 +206,7 @@
                                 <small class="text-muted">All fields marked with * are required</small>
                             </div>
                         </form>
-                        <div id="responseMessage" class="mt-3 alert alert-info" style="display: none;"></div>
+                        <div id="responseMessage" class="mt-3 alert" style="display: none;"></div>
                     </div>
                 </div>
             </div>
@@ -229,7 +218,7 @@
                         <h2 class="mb-0"><i class="fas fa-clipboard-list mr-2"></i>Create AWX Job Template</h2>
                     </div>
                     <div class="card-body">
-                        <form id="jobTemplateForm" method="post" action="/api/awx/create-job-template">
+                        <form id="jobTemplateForm">
                             <div class="form-row">
                                 <div class="form-group col-md-6">
                                     <label for="jobName"><i class="fas fa-heading mr-1"></i>Job Template Name</label>
@@ -278,7 +267,7 @@
                                 <small class="text-muted">All fields marked with * are required</small>
                             </div>
                         </form>
-                        <div id="jobTemplateResponseMessage" class="mt-3 alert alert-info" style="display: none;"></div>
+                        <div id="jobTemplateResponseMessage" class="mt-3 alert" style="display: none;"></div>
                     </div>
                 </div>
                 
@@ -288,7 +277,7 @@
                         <i class="fas fa-sync-alt refresh-btn" onclick="refreshJobTemplates()"></i>
                     </div>
                     <div class="card-body">
-                        <form id="triggerJobForm" method="post" action="/api/awx/trigger-job">
+                        <form id="triggerJobForm">
                             <div class="form-group">
                                 <label for="jobTemplateId"><i class="fas fa-clipboard-list mr-1"></i>Job Template</label>
                                 <select class="form-control" id="jobTemplateId" name="jobTemplateId" required>
@@ -299,9 +288,9 @@
                                 <i class="fas fa-play mr-1"></i>Trigger Job
                             </button>
                         </form>
-                        <div id="triggerJobResponseMessage" class="mt-3 alert alert-info" style="display: none;"></div>
-                        <div id="jobResult" class="mt-3" style="display: none;"></div>
-                        <div id="jobOutput" class="mt-3 job-output" style="display: none;"></div>
+                        <div id="triggerJobResponseMessage" class="mt-3 alert" style="display: none;"></div>
+                        <div id="jobResult" class="mt-3"></div>
+                        <div id="jobOutput" class="mt-3"></div>
                     </div>
                 </div>
             </div>
@@ -313,7 +302,7 @@
                         <h2 class="mb-0"><i class="fas fa-bell mr-2"></i>Manage Notification Template</h2>
                     </div>
                     <div class="card-body">
-                        <form id="manageNotificationForm" method="post" action="/api/awx/notifications/manage">
+                        <form id="manageNotificationForm">
                             <div class="form-row">
                                 <div class="form-group col-md-6">
                                     <label for="manageJobTemplateId"><i class="fas fa-clipboard-list mr-1"></i>Job Template ID</label>
@@ -347,7 +336,7 @@
                                 <i class="fas fa-save mr-1"></i>Manage Notification Template
                             </button>
                         </form>
-                        <div id="manageNotificationResponseMessage" class="mt-3 alert alert-info" style="display: none;"></div>
+                        <div id="manageNotificationResponseMessage" class="mt-3 alert" style="display: none;"></div>
                     </div>
                 </div>
             </div>
@@ -414,18 +403,12 @@
             document.getElementById('currentDateTime').textContent = now.toLocaleDateString('en-US', options);
         }
         
-        setInterval(updateDateTime, 60000); // Update every minute
-        updateDateTime(); // Initial call
-        
+        setInterval(updateDateTime, 60000);
+        updateDateTime();
+
         // SCM Type toggle
         document.getElementById('scmType').addEventListener('change', function () {
-            var scmType = this.value;
-            var gitDetails = document.getElementById('gitDetails');
-            if (scmType === 'git') {
-                gitDetails.style.display = 'block';
-            } else {
-                gitDetails.style.display = 'none';
-            }
+            document.getElementById('gitDetails').style.display = this.value === 'git' ? 'block' : 'none';
         });
 
         // Project Form Submission
@@ -439,7 +422,7 @@
                 name: document.getElementById('name').value,
                 organization: document.getElementById('organization').value,
                 scm_type: document.getElementById('scmType').value,
-                scm_url: document.getElementById('scmUrl').value,
+                scm_url: document.getElementById('scmUrl').value || null,
                 allow_override: document.getElementById('allowOverride').checked
             };
 
@@ -450,22 +433,21 @@
                 },
                 body: JSON.stringify(project)
             })
-                .then(response => response.json())
-                .then(data => {
-                    responseMessage.style.display = 'block';
-                    responseMessage.innerText = JSON.stringify(data, null, 2);
-                    if (data.id) {
-                        responseMessage.classList.remove('alert-info');
-                        responseMessage.classList.add('alert-success');
-                        fetchData('/api/awx/projects', 'projectList');
-                    }
-                })
-                .catch(error => {
-                    responseMessage.style.display = 'block';
-                    responseMessage.classList.remove('alert-info');
-                    responseMessage.classList.add('alert-danger');
-                    responseMessage.innerText = 'Error: ' + error;
-                });
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                responseMessage.style.display = 'block';
+                responseMessage.textContent = `Project created successfully! ID: ${data.id}`;
+                responseMessage.className = 'mt-3 alert alert-success';
+                fetchData('/api/awx/projects', 'projectList');
+            })
+            .catch(error => {
+                responseMessage.style.display = 'block';
+                responseMessage.textContent = `Error: ${error.message}`;
+                responseMessage.className = 'mt-3 alert alert-danger';
+            });
         });
 
         // Job Template Form Submission
@@ -482,7 +464,7 @@
                 inventory: document.getElementById('inventory').value,
                 project: document.getElementById('project').value,
                 playbook: document.getElementById('playbook').value,
-                credentials: document.getElementById('credentials').value
+                credentials: document.getElementById('credentials').value || null
             };
 
             fetch('/api/awx/create-job-template', {
@@ -492,23 +474,22 @@
                 },
                 body: JSON.stringify(jobTemplate)
             })
-                .then(response => response.json())
-                .then(data => {
-                    responseMessage.style.display = 'block';
-                    responseMessage.innerText = JSON.stringify(data, null, 2);
-                    if (data.id) {
-                        responseMessage.classList.remove('alert-info');
-                        responseMessage.classList.add('alert-success');
-                        fetchData('/api/awx/job-templates', 'jobTemplateList');
-                        refreshJobTemplates();
-                    }
-                })
-                .catch(error => {
-                    responseMessage.style.display = 'block';
-                    responseMessage.classList.remove('alert-info');
-                    responseMessage.classList.add('alert-danger');
-                    responseMessage.innerText = 'Error: ' + error;
-                });
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                responseMessage.style.display = 'block';
+                responseMessage.textContent = `Job Template created successfully! ID: ${data.id}`;
+                responseMessage.className = 'mt-3 alert alert-success';
+                fetchData('/api/awx/job-templates', 'jobTemplateList');
+                refreshJobTemplates();
+            })
+            .catch(error => {
+                responseMessage.style.display = 'block';
+                responseMessage.textContent = `Error: ${error.message}`;
+                responseMessage.className = 'mt-3 alert alert-danger';
+            });
         });
 
         // Trigger Job Form Submission
@@ -520,8 +501,8 @@
             const jobOutput = document.getElementById('jobOutput');
             
             responseMessage.style.display = 'none';
-            jobResult.style.display = 'none';
-            jobOutput.style.display = 'none';
+            jobResult.innerHTML = '';
+            jobOutput.innerHTML = '';
 
             const jobTemplateId = document.getElementById('jobTemplateId').value;
 
@@ -532,52 +513,33 @@
                 },
                 body: JSON.stringify({ jobTemplateId: jobTemplateId })
             })
-                .then(response => response.json())
-                .then(data => {
-                    responseMessage.style.display = 'block';
-                    responseMessage.innerText = `Job triggered successfully. Job ID: ${data.id}`;
-                    responseMessage.classList.remove('alert-info');
-                    responseMessage.classList.add('alert-success');
-                    
-                    checkJobResult(data.id);
-                })
-                .catch(error => {
-                    responseMessage.style.display = 'block';
-                    responseMessage.classList.remove('alert-info');
-                    responseMessage.classList.add('alert-danger');
-                    responseMessage.innerText = 'Error: ' + error;
-                });
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(jobId => {
+                if (!jobId) throw new Error('No job ID returned from server');
+                
+                responseMessage.style.display = 'block';
+                responseMessage.innerHTML = `Job triggered successfully!<br><small>Job ID: ${jobId}</small>`;
+                responseMessage.className = 'mt-3 alert alert-success';
+                
+                // Check job result immediately
+                checkJobResult(jobId);
+            })
+            .catch(error => {
+                responseMessage.style.display = 'block';
+                responseMessage.textContent = `Error: ${error.message}`;
+                responseMessage.className = 'mt-3 alert alert-danger';
+            });
         });
 
         function checkJobResult(jobId) {
-            const jobResult = document.getElementById('jobResult');
-            const jobOutput = document.getElementById('jobOutput');
-            
             fetch('/api/awx/job-result/' + jobId)
                 .then(response => response.json())
                 .then(data => {
-                    jobResult.style.display = 'block';
-                    
-                    let statusBadge = '';
+                    document.getElementById('jobResult').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
                     if (data.status === 'successful') {
-                        statusBadge = '<span class="status-badge status-success">Success</span>';
-                    } else if (data.status === 'failed') {
-                        statusBadge = '<span class="status-badge status-failed">Failed</span>';
-                    } else if (data.status === 'running') {
-                        statusBadge = '<span class="status-badge status-running">Running</span>';
-                    }
-                    
-                    jobResult.innerHTML = `
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5>Job Status: ${statusBadge}</h5>
-                            <small class="text-muted">ID: ${jobId}</small>
-                        </div>
-                        <pre class="mt-2">${JSON.stringify(data, null, 2)}</pre>
-                    `;
-                    
-                    if (data.status === 'successful') {
-                        getJobOutput(jobId);
-                    } else if (data.status === 'failed') {
                         getJobOutput(jobId);
                     } else {
                         setTimeout(function () {
@@ -588,13 +550,10 @@
         }
 
         function getJobOutput(jobId) {
-            const jobOutput = document.getElementById('jobOutput');
-            
             fetch('/api/awx/job-output/' + jobId)
                 .then(response => response.text())
                 .then(data => {
-                    jobOutput.style.display = 'block';
-                    jobOutput.innerHTML = data;
+                    document.getElementById('jobOutput').innerHTML = '<pre>' + data + '</pre>';
                 });
         }
 
@@ -619,34 +578,36 @@
                 },
                 body: JSON.stringify(notification)
             })
-                .then(response => response.json())
-                .then(data => {
-                    responseMessage.style.display = 'block';
-                    responseMessage.innerText = JSON.stringify(data, null, 2);
-                    if (data.success) {
-                        responseMessage.classList.remove('alert-info');
-                        responseMessage.classList.add('alert-success');
-                    }
-                })
-                .catch(error => {
-                    responseMessage.style.display = 'block';
-                    responseMessage.classList.remove('alert-info');
-                    responseMessage.classList.add('alert-danger');
-                    responseMessage.innerText = 'Error: ' + error;
-                });
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.text();
+            })
+            .then(data => {
+                responseMessage.style.display = 'block';
+                responseMessage.textContent = data;
+                responseMessage.className = 'mt-3 alert alert-success';
+            })
+            .catch(error => {
+                responseMessage.style.display = 'block';
+                responseMessage.textContent = `Error: ${error.message}`;
+                responseMessage.className = 'mt-3 alert alert-danger';
+            });
         });
 
         // Fetch and populate resource lists
         function fetchData(endpoint, listId) {
             fetch(endpoint)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
                 .then(data => {
                     const list = document.getElementById(listId);
                     list.innerHTML = '';
                     
-                    if (data.length === 0) {
+                    if (!data || data.length === 0) {
                         const li = document.createElement('li');
-                        li.classList.add('list-group-item', 'text-muted');
+                        li.className = 'list-group-item text-muted';
                         li.textContent = 'No items found';
                         list.appendChild(li);
                         return;
@@ -654,7 +615,7 @@
                     
                     data.forEach(item => {
                         const li = document.createElement('li');
-                        li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+                        li.className = 'list-group-item d-flex justify-content-between align-items-center';
                         
                         const content = document.createElement('div');
                         content.innerHTML = `<strong>${item.name || 'Unnamed'}</strong><br><small>ID: ${item.id}</small>`;
@@ -663,7 +624,7 @@
                         
                         if (listId === 'jobTemplateList') {
                             const triggerBtn = document.createElement('button');
-                            triggerBtn.classList.add('btn', 'btn-sm', 'btn-outline-primary');
+                            triggerBtn.className = 'btn btn-sm btn-outline-primary';
                             triggerBtn.innerHTML = '<i class="fas fa-play"></i>';
                             triggerBtn.onclick = function() {
                                 document.getElementById('jobTemplateId').value = item.id;
@@ -680,11 +641,11 @@
                     list.innerHTML = '';
                     
                     const li = document.createElement('li');
-                    li.classList.add('list-group-item', 'text-danger');
+                    li.className = 'list-group-item text-danger';
                     li.textContent = 'Error loading data';
                     list.appendChild(li);
                     
-                    console.error('Error fetching data:', error);
+                    console.error(`Error fetching ${endpoint}:`, error);
                 });
         }
 
@@ -702,7 +663,10 @@
         // Refresh job templates for triggering
         function refreshJobTemplates() {
             fetch('/api/awx/job-templates')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
                 .then(jobTemplates => {
                     const jobTemplateSelect = document.getElementById('jobTemplateId');
                     jobTemplateSelect.innerHTML = '<option value="" disabled selected>Select a job template</option>';
