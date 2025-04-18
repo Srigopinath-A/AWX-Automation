@@ -65,7 +65,7 @@ public class AWXController {
         return awxService.createProject(project);
     }
     
-    
+    @PostMapping("/create-notification")
     public NotificationTemplateResponse createNotification(@RequestBody NotificationTemplateRequest notificationtemplaterequest) {
     	return awxService.CreateNotification(notificationtemplaterequest);
     }
