@@ -21,6 +21,9 @@ import com.example.Awx_automation.Entity.InventoryResponse;
 import com.example.Awx_automation.Entity.JobTemplateRequest;
 import com.example.Awx_automation.Entity.JobTemplateResponse;
 import com.example.Awx_automation.Entity.JobtemplateResponseWrapper;
+import com.example.Awx_automation.Entity.NotificationTemplateRequest;
+import com.example.Awx_automation.Entity.NotificationTemplateResponse;
+import com.example.Awx_automation.Entity.Notification_Template_Creation;
 import com.example.Awx_automation.Entity.Notification_response;
 import com.example.Awx_automation.Entity.Notification_templates;
 import com.example.Awx_automation.Entity.Organization;
@@ -31,6 +34,7 @@ import com.example.Awx_automation.Entity.ProjectResponseWrapper;
 import com.example.Awx_automation.Repo.HostRepository;
 import com.example.Awx_automation.Repo.InventoryRepository;
 import com.example.Awx_automation.Repo.JobTemplateRepository;
+import com.example.Awx_automation.Repo.NotificationCreationRepo;
 import com.example.Awx_automation.Repo.NotificationRep;
 import com.example.Awx_automation.Repo.OrganizationRepository;
 import com.example.Awx_automation.Repo.ProjectRepository;
@@ -42,6 +46,9 @@ public class AWXService {
 	private final RestTemplate restTemplate;
 	private final String awxApiUrl;
 	private final String token;
+	
+	@Autowired
+	private NotificationCreationRepo notificationcreationrepo;
 
 	@Autowired
 	private HostRepository hostRepository;
@@ -153,6 +160,25 @@ public class AWXService {
 			logger.severe("Error creating project: " + e.getMessage());
 			throw e;
 		}
+	}
+	
+	public NotificationTemplateResponse CreateNotification(NotificationTemplateRequest notificationtemplaterequest) {
+	HttpEntity<NotificationTemplateRequest> request = new  HttpEntity<> (notificationtemplaterequest , createAuthHeaders());
+	ResponseEntity<NotificationTemplateResponse> response = restTemplate.postForEntity(awxApiUrl + "/notification_templates/",request, NotificationTemplateResponse.class);
+	
+	NotificationTemplateResponse Notificationresponse = response.getBody();
+	
+	Notification_Template_Creation NotificationCreation = new Notification_Template_Creation();
+	NotificationCreation.setId(Notificationresponse.getId());
+	NotificationCreation.setName(Notificationresponse.getName());
+	NotificationCreation.setDescription(Notificationresponse.getDescription());
+	NotificationCreation.setNotificationType(Notificationresponse.getNotificationType());
+	NotificationCreation.setNotificationConfiguration(Notificationresponse.getNotificationConfiguration());
+	NotificationCreation.setOrganization(Notificationresponse.getOrganization());
+	
+	notificationcreationrepo.save(NotificationCreation);
+	return Notificationresponse;
+	
 	}
 
 	public JobTemplateResponse createJobTemplate(JobTemplateRequest jobTemplateRequest) {

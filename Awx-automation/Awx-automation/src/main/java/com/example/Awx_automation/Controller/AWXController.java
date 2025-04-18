@@ -10,6 +10,8 @@ import com.example.Awx_automation.Entity.Host;
 import com.example.Awx_automation.Entity.Inventory;
 import com.example.Awx_automation.Entity.JobTemplateRequest;
 import com.example.Awx_automation.Entity.JobTemplateResponse;
+import com.example.Awx_automation.Entity.NotificationTemplateRequest;
+import com.example.Awx_automation.Entity.NotificationTemplateResponse;
 import com.example.Awx_automation.Entity.Notification_templates;
 import com.example.Awx_automation.Entity.Organization;
 import com.example.Awx_automation.Entity.Project;
@@ -62,7 +64,11 @@ public class AWXController {
     public ProjectResponse createProject(@RequestBody Project project) {
         return awxService.createProject(project);
     }
-
+    
+    
+    public NotificationTemplateResponse createNotification(@RequestBody NotificationTemplateRequest notificationtemplaterequest) {
+    	return awxService.CreateNotification(notificationtemplaterequest);
+    }
     @PostMapping("/create-job-template")
     public JobTemplateResponse createJobTemplate(@RequestBody JobTemplateRequest jobTemplateRequest) {
         return awxService.createJobTemplate(jobTemplateRequest);
